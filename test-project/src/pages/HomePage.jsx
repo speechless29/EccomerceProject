@@ -1,9 +1,10 @@
-import "./header.css";
+import { Header } from "../components/Header";
 import "./HomePage.css";
 export function HomePage() {
-  <title>HomePage</title>;
   return (
     <>
+      <Header />
+      <title>HomePage</title>;
       <div className="header">
         <div className="left-section">
           <a href="/" className="header-link">
@@ -32,7 +33,6 @@ export function HomePage() {
           </a>
         </div>
       </div>
-
       <div className="home-page">
         <div className="products-grid">
           <div className="product-container">

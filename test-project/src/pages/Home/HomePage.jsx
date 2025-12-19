@@ -9,8 +9,21 @@ export function HomePage({ cart, loadCart }) {
 
   useEffect(() => {
     const getHomeData = async () => {
-      const response = await axios.get("/api/products");
-      setProducts(response.data);
+      try {
+        const response = await axios.get("/api/products");
+        setProducts(response.data);
+      } catch (err) {
+        // if backend isn't available (deployed static), fall back to bundled JSON
+        try {
+          const local = await axios.get("/api/products.json");
+          setProducts(local.data);
+        } catch (e) {
+          console.error(
+            "Failed to load products from /api/products and /api/products.json",
+            e
+          );
+        }
+      }
     };
     getHomeData();
   }, []);

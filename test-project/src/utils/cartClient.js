@@ -21,10 +21,19 @@ export async function loadCart() {
     return response.data;
   } catch (e) {
     const items = readLocal();
-    return items.map((it) => {
-      // ensure product property exists for UI
-      return { ...it, product: it.product };
-    });
+    if (items.length === 0) return [];
+    // try to attach product objects from bundled products.json
+    try {
+      const resp = await axios.get("/api/products.json");
+      const products = resp.data || [];
+      return items.map((it) => {
+        if (it.product) return it;
+        const prod = products.find((p) => p.id === it.productId);
+        return { ...it, product: prod || null };
+      });
+    } catch (e2) {
+      return items.map((it) => ({ ...it, product: it.product || null }));
+    }
   }
 }
 

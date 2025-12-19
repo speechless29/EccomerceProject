@@ -4,12 +4,33 @@ import { Header } from "../../components/Header";
 import dayjs from "dayjs";
 import { formatMoney } from "../../utils/money";
 import "./OrdersPage.css";
+
 export function OrdersPage({ cart }) {
   const [orders, setOrders] = useState([]);
+
   useEffect(() => {
-    axios.get("/api/orders?expand=products").then((response) => {
-      setOrders(response.data);
-    });
+    const load = async () => {
+      try {
+        const response = await axios.get("/api/orders?expand=products");
+        setOrders(response.data);
+      } catch (e) {
+        // try bundled orders.json
+        try {
+          const resp = await axios.get("/api/orders.json");
+          let remote = resp.data || [];
+          // also include any locally created orders
+          const localRaw = localStorage.getItem("local-orders");
+          const local = localRaw ? JSON.parse(localRaw) : [];
+          setOrders([...local, ...remote]);
+        } catch (err) {
+          // finally, just load local orders
+          const localRaw = localStorage.getItem("local-orders");
+          const local = localRaw ? JSON.parse(localRaw) : [];
+          setOrders(local);
+        }
+      }
+    };
+    load();
   }, []);
   return (
     <>

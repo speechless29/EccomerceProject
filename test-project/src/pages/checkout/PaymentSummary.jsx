@@ -1,14 +1,42 @@
 import axios from "axios";
 import { useNavigate } from "react-router";
 import { formatMoney } from "../../utils/money";
+import * as cartClient from "../../utils/cartClient";
 
 export function PaymentSummary({ paymentSummary, loadCart }) {
   const navigate = useNavigate();
 
   const createOrder = async () => {
-    await axios.post("/api/orders");
-    await loadCart();
-    navigate("/orders");
+    try {
+      await axios.post("/api/orders");
+      await loadCart();
+      navigate("/orders");
+    } catch (e) {
+      // fallback: save order locally and clear local cart
+      try {
+        const localRaw = localStorage.getItem("local-orders");
+        const local = localRaw ? JSON.parse(localRaw) : [];
+        const cartRaw = localStorage.getItem("local-cart-items");
+        const cart = cartRaw ? JSON.parse(cartRaw) : [];
+        const order = {
+          id: `local-${Date.now()}`,
+          orderTimeMs: Date.now(),
+          totalCostCents: paymentSummary ? paymentSummary.totalCostCents : 0,
+          products: cart.map((it) => ({
+            product: it.product || { id: it.productId },
+            quantity: it.quantity,
+            orderProductDeliveryTimeMs: Date.now() + 3 * 24 * 60 * 60 * 1000,
+          })),
+        };
+        local.push(order);
+        localStorage.setItem("local-orders", JSON.stringify(local));
+        cartClient.clearLocalCart();
+        await loadCart();
+        navigate("/orders");
+      } catch (err) {
+        console.error("Failed to create local order", err);
+      }
+    }
   };
 
   return (

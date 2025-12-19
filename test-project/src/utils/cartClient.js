@@ -64,3 +64,7 @@ export async function deleteCartItem(productId) {
     writeLocal(items);
   }
 }
+
+export function clearLocalCart() {
+  writeLocal([]);
+}

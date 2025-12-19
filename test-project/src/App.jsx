@@ -4,17 +4,17 @@ import { Routes, Route } from "react-router";
 import { CheckoutPage } from "./pages/checkout/CheckoutPage";
 import { OrdersPage } from "./pages/order/OrdersPage";
 import { useEffect, useState } from "react";
-import axios from "axios";
+import * as cartClient from "./utils/cartClient";
 function App() {
   const [cart, setCart] = useState([]);
 
   const loadCart = async () => {
-    const response = await axios.get("/api/cart-items?expand=product");
-    setCart(response.data);
+    const items = await cartClient.loadCart();
+    setCart(items);
   };
   useEffect(() => {
     loadCart();
-  });
+  }, []);
   return (
     <Routes>
       <Route path="/" element={<HomePage cart={cart} loadCart={loadCart} />} />

@@ -1,5 +1,5 @@
 import "./header.css";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 export function Header({ cart = [] }) {
   let totalQuantity = 0;
   cart.forEach((item) => {

@@ -2,6 +2,11 @@ import axios from "axios";
 
 const LOCAL_KEY = "local-cart-items";
 
+// Use Vite env var `VITE_API_BASE_URL` for backend URL when deployed.
+// If not provided, requests use the same origin (useful for local dev).
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+const apiClient = axios.create({ baseURL: API_BASE });
+
 function readLocal() {
   try {
     const raw = localStorage.getItem(LOCAL_KEY);
@@ -17,13 +22,14 @@ function writeLocal(items) {
 
 export async function loadCart() {
   try {
-    const response = await axios.get("/api/cart-items?expand=product");
+    const response = await apiClient.get("/api/cart-items?expand=product");
     return response.data;
   } catch (e) {
     const items = readLocal();
     if (items.length === 0) return [];
     // try to attach product objects from bundled products.json
     try {
+      // Always fetch the bundled static JSON from the frontend origin
       const resp = await axios.get("/api/products.json");
       const products = resp.data || [];
       return items.map((it) => {
@@ -39,7 +45,7 @@ export async function loadCart() {
 
 export async function addCartItem(productId, quantity = 1, product) {
   try {
-    await axios.post("/api/cart-items", { productId, quantity });
+    await apiClient.post("/api/cart-items", { productId, quantity });
   } catch (e) {
     const items = readLocal();
     const existing = items.find((i) => i.productId === productId);
@@ -54,7 +60,7 @@ export async function addCartItem(productId, quantity = 1, product) {
 
 export async function updateCartItem(productId, updates = {}) {
   try {
-    await axios.put(`/api/cart-items/${productId}`, updates);
+    await apiClient.put(`/api/cart-items/${productId}`, updates);
   } catch (e) {
     const items = readLocal();
     const idx = items.findIndex((i) => i.productId === productId);
@@ -67,7 +73,7 @@ export async function updateCartItem(productId, updates = {}) {
 
 export async function deleteCartItem(productId) {
   try {
-    await axios.delete(`/api/cart-items/${productId}`);
+    await apiClient.delete(`/api/cart-items/${productId}`);
   } catch (e) {
     const items = readLocal().filter((i) => i.productId !== productId);
     writeLocal(items);

@@ -32,9 +32,11 @@ export function DeliveryOptions({ deliveryOptions, cartItem, loadCart }) {
             />
             <div>
               <div className="delivery-option-date">
-                {dayjs(deliveryOption.estimatedDeliveryTimeMs).format(
-                  "dddd, MMMM D"
-                )}
+                {deliveryOption?.estimatedDeliveryTimeMs
+                  ? dayjs(deliveryOption.estimatedDeliveryTimeMs).format(
+                      "dddd, MMMM D"
+                    )
+                  : "Date TBD"}
               </div>
               <div className="delivery-option-price">{priceString}</div>
             </div>
